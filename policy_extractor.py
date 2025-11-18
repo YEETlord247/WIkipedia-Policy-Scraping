@@ -10,63 +10,130 @@ from bs4 import BeautifulSoup
 from urllib.parse import unquote
 
 
-# Known Wikipedia policies (mandatory rules)
-POLICIES = {
-    'NPOV': 'Neutral Point of View',
+# Comprehensive Wikipedia policy/guideline/essay database
+WIKIPEDIA_ITEMS = {
+    "Policy": [
+        "Neutral point of view",
+        "No original research",
+        "Verifiability",
+        "Article titles",
+        "Biographies of living persons",
+        "Image use policy",
+        "What Wikipedia is not",
+        "Block evasion",
+        "Civility",
+        "Clean start",
+        "Consensus",
+        "Dispute resolution",
+        "Edit warring",
+        "Editing policy",
+        "Harassment",
+        "No personal attacks",
+        "No legal threats",
+        "Ownership of content",
+        "Sockpuppetry",
+        "Username policy",
+        "Vandalism",
+        "Deletion policy",
+        "Speedy deletion",
+        "Proposed deletion",
+        "Proposed deletion (BLP)",
+        "Revision deletion",
+        "Oversight"
+    ],
+    "Guideline": [
+        "Assume good faith",
+        "Conflict of interest",
+        "Disruptive editing",
+        "Don't bite the newcomers",
+        "Don't disrupt to make a point",
+        "Etiquette",
+        "Gaming the system",
+        "Citing sources",
+        "External links",
+        "Reliable sources",
+        "Fringe theories",
+        "Naming conventions",
+        "Non-free content",
+        "Offensive material",
+        "Article size",
+        "Be bold",
+        "Understandability",
+        "Categories, lists, templates",
+        "Categorization",
+        "Disambiguation",
+        "Manual of Style",
+        "Notability",
+        "Deletion process"
+    ],
+    "Essay": [
+        "What no consensus really means",
+        "One against many",
+        "Getting your way at Wikipedia",
+        "Lob a grenade and run away",
+        "Always keep context in mind when arguing claims",
+        "Academic Neutrality",
+        "Avoid contemporary sources",
+        "A POV that draws a source.",
+        "Beyond the Neutral Point of View",
+        "Civil POV pushing is POV pushing",
+        "CIVIL POV Pushing Strategies",
+        "Gendered category criterion",
+        "Yes. We are biased.",
+        "Don't act neutral",
+        "Don't throw your POV up to the sky",
+        "Systemic bias against Transformers",
+        "Neutrality and consensus",
+        "Neutrality of sources",
+        "Neutral = source-oriented",
+        "No. We are not biased.",
+        "NPOV, a detailed breakdown",
+        "Asymmetric controversy",
+        "Crying MEDRS!",
+        "Lede bombing",
+        "The big mistake",
+        "Writing neutrally for Wikipedia",
+        "Prefer truth",
+        "Splitting the difference",
+        "Reliable sources for geopolitical adversaries",
+        "Media, Politics, and Peace",
+        "ChristianityAndNPOV",
+        "Essjay neutrality",
+        "Yes, you are a nerd.",
+        "When interest compromises neutrality"
+    ]
+}
+
+# Common shortcuts mapping (for quick detection)
+SHORTCUTS = {
+    'NPOV': 'Neutral point of view',
+    'NOR': 'No original research',
     'V': 'Verifiability',
-    'NOR': 'No Original Research',
-    'BLP': 'Biographies of Living Persons',
-    '3RR': 'Three-Revert Rule',
+    'BLP': 'Biographies of living persons',
+    'NOT': 'What Wikipedia is not',
+    'NOTCENSORED': 'What Wikipedia is not',
     'CIVIL': 'Civility',
-    'NPA': 'No Personal Attacks',
-    'AGF': 'Assume Good Faith',
     'CON': 'Consensus',
     'CONSENSUS': 'Consensus',
-    'NOT': 'What Wikipedia is Not',
-    'NOTCENSORED': 'Wikipedia is Not Censored',
-    'COPYVIO': 'Copyright Violations',
-    'COI': 'Conflict of Interest',
-    'PAID': 'Paid Editing',
-    'SOCK': 'Sock Puppetry',
+    'EW': 'Edit warring',
+    '3RR': 'Edit warring',
+    'NPA': 'No personal attacks',
+    'SOCK': 'Sockpuppetry',
     'VAND': 'Vandalism',
-    'EW': 'Edit Warring',
-}
-
-# Known Wikipedia guidelines (best practices)
-GUIDELINES = {
+    'AGF': 'Assume good faith',
+    'COI': 'Conflict of interest',
+    'BITE': "Don't bite the newcomers",
+    'POINT': "Don't disrupt to make a point",
+    'GAME': 'Gaming the system',
+    'CITE': 'Citing sources',
+    'EL': 'External links',
+    'RS': 'Reliable sources',
+    'FRINGE': 'Fringe theories',
+    'MOS': 'Manual of Style',
     'N': 'Notability',
     'NOTABLE': 'Notability',
-    'RS': 'Reliable Sources',
-    'RSP': 'Reliable Sources/Perennial Sources',
-    'MOS': 'Manual of Style',
-    'MOSBOLD': 'Manual of Style - Bold',
-    'CITE': 'Citing Sources',
-    'EL': 'External Links',
-    'ACCESS': 'Accessibility',
-    'ALT': 'Alternative Text',
-    'BRD': 'Bold, Revert, Discuss',
-    'UNDUE': 'Undue Weight',
-    'WEIGHT': 'Due Weight',
-    'FRINGE': 'Fringe Theories',
-    'INTEXT': 'In-text Attribution',
-    'SPS': 'Self-Published Sources',
-    'PRIMARY': 'Primary Sources',
-    'SECONDARY': 'Secondary Sources',
-    'IRS': 'Identifying Reliable Sources',
-    'MEDRS': 'Identifying Reliable Sources (Medicine)',
-    'PSTS': 'Primary, Secondary, and Tertiary Sources',
-}
-
-# Known Wikipedia essays (opinions/advice)
-ESSAYS = {
-    'COMMON': 'Common Sense',
-    'IAR': 'Ignore All Rules',
-    'DEADLINE': 'There is No Deadline',
-    'STICK': 'Stick to the Point',
-    'BEANS': "Don't Explain How to Game the System",
-    'SNOW': 'Snowball Clause',
-    'RANDY': 'Randy in Boise',
-    'DNFTT': "Don't Feed the Trolls",
+    'UNDUE': 'Neutral point of view',  # UNDUE is part of NPOV
+    'WEIGHT': 'Neutral point of view',
 }
 
 
@@ -80,107 +147,107 @@ def extract_wikipedia_links(html_content, text_content):
         
     Returns:
         dict with 'policies', 'guidelines', and 'essays' keys, each containing
-        a list of dicts with 'shortcut', 'full_name', and 'url' keys
+        a list of dicts with 'name' and 'url' keys
     """
-    found_policies = []
-    found_guidelines = []
-    found_essays = []
+    found_items = {
+        'policies': {},
+        'guidelines': {},
+        'essays': {}
+    }
     
     soup = BeautifulSoup(html_content, 'html.parser')
     
-    # Find all links in the HTML
+    # Method 1: Extract from Wikipedia links in HTML
     links = soup.find_all('a', href=True)
-    
-    # Track what we've already found (to avoid duplicates)
-    found_shortcuts = set()
-    
     for link in links:
         href = link.get('href', '')
-        link_text = link.get_text().strip()
-        
-        # Check if it's a Wikipedia namespace link
         if 'wikipedia.org/wiki/Wikipedia:' in href or href.startswith('/wiki/Wikipedia:'):
-            # Extract the page name
-            page_name = href.split('/wiki/Wikipedia:')[-1] if '/wiki/Wikipedia:' in href else ''
-            page_name = unquote(page_name.split('#')[0])  # Remove anchor and decode
-            
-            # Check if it's a shortcut (WP:SOMETHING)
-            shortcut_match = re.search(r'WP:([A-Z0-9]+)', page_name.upper())
-            if shortcut_match:
-                shortcut = shortcut_match.group(1)
-            else:
-                # Use the page name as the shortcut
-                shortcut = page_name.replace('_', ' ').upper()
-            
-            # Skip if we've already found this one
-            if shortcut in found_shortcuts:
-                continue
-            found_shortcuts.add(shortcut)
-            
-            # Categorize it
-            full_url = f"https://en.wikipedia.org/wiki/Wikipedia:{page_name}"
-            
-            if shortcut in POLICIES:
-                found_policies.append({
-                    'shortcut': f'WP:{shortcut}',
-                    'full_name': POLICIES[shortcut],
-                    'url': full_url
-                })
-            elif shortcut in GUIDELINES:
-                found_guidelines.append({
-                    'shortcut': f'WP:{shortcut}',
-                    'full_name': GUIDELINES[shortcut],
-                    'url': full_url
-                })
-            elif shortcut in ESSAYS:
-                found_essays.append({
-                    'shortcut': f'WP:{shortcut}',
-                    'full_name': ESSAYS[shortcut],
-                    'url': full_url
-                })
-            else:
-                # Unknown - try to categorize based on common patterns
-                # For now, assume it's a guideline if not in our lists
-                found_guidelines.append({
-                    'shortcut': f'WP:{shortcut}',
-                    'full_name': page_name.replace('_', ' '),
-                    'url': full_url
-                })
+            process_wikipedia_link(href, found_items)
     
-    # Also search for WP: shortcuts in plain text (not linked)
-    text_shortcuts = re.findall(r'\bWP:([A-Z0-9]+)\b', text_content)
+    # Method 2: Search for shortcuts in text (WP:SOMETHING)
+    shortcut_matches = re.findall(r'\bWP:([A-Z0-9]+)\b', text_content, re.IGNORECASE)
+    for shortcut in shortcut_matches:
+        shortcut_upper = shortcut.upper()
+        if shortcut_upper in SHORTCUTS:
+            full_name = SHORTCUTS[shortcut_upper]
+            category = find_category(full_name)
+            if category:
+                add_item(found_items, category, full_name, f'WP:{shortcut_upper}')
     
-    for shortcut in text_shortcuts:
-        if shortcut in found_shortcuts:
-            continue
-        found_shortcuts.add(shortcut)
-        
-        full_url = f"https://en.wikipedia.org/wiki/Wikipedia:{shortcut}"
-        
-        if shortcut in POLICIES:
-            found_policies.append({
-                'shortcut': f'WP:{shortcut}',
-                'full_name': POLICIES[shortcut],
-                'url': full_url
-            })
-        elif shortcut in GUIDELINES:
-            found_guidelines.append({
-                'shortcut': f'WP:{shortcut}',
-                'full_name': GUIDELINES[shortcut],
-                'url': full_url
-            })
-        elif shortcut in ESSAYS:
-            found_essays.append({
-                'shortcut': f'WP:{shortcut}',
-                'full_name': ESSAYS[shortcut],
-                'url': full_url
-            })
+    # Method 3: Search for full names in text (case-insensitive)
+    for category, items in WIKIPEDIA_ITEMS.items():
+        for item_name in items:
+            # Create regex pattern that matches the item name (case-insensitive, word boundaries)
+            # Handle special characters in the item name
+            escaped_name = re.escape(item_name)
+            # Make it flexible: allow some variation
+            pattern = r'\b' + escaped_name.replace(r'\ ', r'\s+') + r'\b'
+            
+            if re.search(pattern, text_content, re.IGNORECASE):
+                add_item(found_items, category.lower() + 's', item_name)
     
+    # Convert dicts to lists for output
     return {
-        'policies': found_policies,
-        'guidelines': found_guidelines,
-        'essays': found_essays
+        'policies': list(found_items['policies'].values()),
+        'guidelines': list(found_items['guidelines'].values()),
+        'essays': list(found_items['essays'].values())
     }
+
+
+def process_wikipedia_link(href, found_items):
+    """Process a Wikipedia link and add it to found_items if it's a policy/guideline/essay."""
+    # Extract the page name
+    if '/wiki/Wikipedia:' in href:
+        page_name = href.split('/wiki/Wikipedia:')[-1]
+    else:
+        page_name = href.replace('/wiki/Wikipedia:', '')
+    
+    page_name = unquote(page_name.split('#')[0])  # Remove anchor and decode
+    page_name = page_name.replace('_', ' ')
+    
+    # Check if this page name matches any known item
+    for category, items in WIKIPEDIA_ITEMS.items():
+        for item_name in items:
+            # Case-insensitive comparison
+            if page_name.lower() == item_name.lower() or item_name.lower() in page_name.lower():
+                add_item(found_items, category.lower() + 's', item_name)
+                return
+    
+    # If not found in our database, check shortcuts
+    shortcut_match = re.search(r'WP[:/]?([A-Z0-9]+)', page_name, re.IGNORECASE)
+    if shortcut_match:
+        shortcut = shortcut_match.group(1).upper()
+        if shortcut in SHORTCUTS:
+            full_name = SHORTCUTS[shortcut]
+            category = find_category(full_name)
+            if category:
+                add_item(found_items, category, full_name, f'WP:{shortcut}')
+
+
+def find_category(item_name):
+    """Find which category (policies/guidelines/essays) an item belongs to."""
+    for category, items in WIKIPEDIA_ITEMS.items():
+        if item_name in items:
+            return category.lower() + 's'
+    return None
+
+
+def add_item(found_items, category, item_name, shortcut=None):
+    """Add an item to found_items, avoiding duplicates."""
+    if category not in found_items:
+        return
+    
+    # Use item_name as key to avoid duplicates
+    if item_name not in found_items[category]:
+        # Create Wikipedia URL
+        url_name = item_name.replace(' ', '_')
+        url = f"https://en.wikipedia.org/wiki/Wikipedia:{url_name}"
+        
+        found_items[category][item_name] = {
+            'name': item_name,
+            'shortcut': shortcut,
+            'url': url
+        }
 
 
 def format_policy_list(policy_list):
@@ -188,7 +255,7 @@ def format_policy_list(policy_list):
     Format a list of policies/guidelines/essays as HTML for display.
     
     Args:
-        policy_list: List of dicts with 'shortcut', 'full_name', and 'url' keys
+        policy_list: List of dicts with 'name', 'shortcut', and 'url' keys
         
     Returns:
         HTML string
@@ -198,10 +265,10 @@ def format_policy_list(policy_list):
     
     html_parts = []
     for item in policy_list:
-        html_parts.append(
-            f'<a href="{item["url"]}" target="_blank">{item["shortcut"]}</a> '
-            f'({item["full_name"]})'
-        )
+        if item.get('shortcut'):
+            display = f'<a href="{item["url"]}" target="_blank">{item["shortcut"]}</a> ({item["name"]})'
+        else:
+            display = f'<a href="{item["url"]}" target="_blank">{item["name"]}</a>'
+        html_parts.append(display)
     
     return '<br>'.join(html_parts)
-
