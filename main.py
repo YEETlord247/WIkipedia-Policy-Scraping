@@ -108,12 +108,16 @@ def analyze():
 
 if __name__ == '__main__':
     # Run the Flask development server
+    import os
+    port = int(os.environ.get('PORT', 5001))
+    
     print("\n" + "="*60)
     print("Wikipedia Talk Page Policy Analyzer")
     print("="*60)
-    print("Starting server on http://127.0.0.1:5001")
+    print(f"Starting server on port {port}")
     print("Press Ctrl+C to stop the server")
     print("="*60 + "\n")
     
-    app.run(debug=True, port=5001, host='127.0.0.1')
+    # Use 0.0.0.0 for deployment, but keep debug=False for production
+    app.run(debug=False, port=port, host='0.0.0.0')
 
