@@ -1,114 +1,21 @@
 """
-Wikipedia Talk Page Policy Analyzer - Main Flask Application
+Wikipedia Talk Page Policy Analyzer - Main Entry Point
 
-This is the main Flask backend that serves the web interface and coordinates
-the scraping and analysis of Wikipedia talk page discussions.
+Professional Flask application for analyzing Wikipedia talk page discussions
+and identifying policy, guideline, and essay mentions.
+
+Author: Utkarsh Rai
+Repository: https://github.com/YEETlord247/WIkipedia-Policy-Scraping
 """
 
-from flask import Flask, render_template, request, jsonify
 import os
-from dotenv import load_dotenv
+from app import create_app
 
-# Import our custom modules
-from scraper import scrape_wikipedia_discussion
-from analyzer import identify_policies_with_openai
-from policy_extractor import extract_wikipedia_links, format_policy_list
-
-# Load environment variables from .env file
-load_dotenv()
-
-app = Flask(__name__)
-
-@app.route('/')
-def index():
-    """Render the main page"""
-    return render_template('index.html')
-
-
-@app.route('/favicon.ico')
-def favicon():
-    """Return empty favicon to prevent 404 errors"""
-    return '', 204
-
-
-@app.route('/analyze', methods=['POST'])
-def analyze():
-    """
-    Analyze Wikipedia discussion endpoint.
-    
-    Accepts a POST request with a URL to a Wikipedia talk page discussion,
-    scrapes the specific discussion section, and analyzes it for policy/guideline/essay mentions.
-    
-    Request JSON:
-        {
-            "url": "https://en.wikipedia.org/wiki/Talk:Article#Section_Name"
-        }
-    
-    Response JSON:
-        {
-            "discussion_html": "<html content of the specific discussion>",
-            "policies": "Analysis of policies mentioned",
-            "guidelines": "Analysis of guidelines mentioned", 
-            "essays": "Analysis of essays mentioned"
-        }
-    """
-    try:
-        data = request.get_json()
-        url = data.get('url')
-        
-        if not url:
-            return jsonify({'error': 'No URL provided'}), 400
-        
-        print(f"\n{'='*60}")
-        print(f"Starting analysis for: {url}")
-        print(f"{'='*60}")
-        
-        # Scrape the specific discussion section
-        discussion = scrape_wikipedia_discussion(url)
-        
-        if not discussion:
-            print("Error: Failed to scrape Wikipedia page")
-            return jsonify({
-                'error': 'Failed to scrape Wikipedia page. Please check the URL and try again.'
-            }), 500
-        
-        print(f"\n✓ Successfully scraped discussion")
-        print(f"  HTML length: {len(discussion['html'])} characters")
-        print(f"  Text length: {len(discussion['text'])} characters")
-        
-        # Extract Wikipedia policy/guideline/essay links directly from the content
-        print(f"\nExtracting Wikipedia policy links...")
-        extracted_links = extract_wikipedia_links(discussion['html'], discussion['text'])
-        
-        print(f"  Found {len(extracted_links['policies'])} policies")
-        print(f"  Found {len(extracted_links['guidelines'])} guidelines")
-        print(f"  Found {len(extracted_links['essays'])} essays")
-        
-        # Format the results for display
-        policies_html = format_policy_list(extracted_links['policies'])
-        guidelines_html = format_policy_list(extracted_links['guidelines'])
-        essays_html = format_policy_list(extracted_links['essays'])
-        
-        print(f"\n✓ Analysis complete!")
-        print(f"{'='*60}\n")
-        
-        return jsonify({
-            'discussion_html': discussion['html'],
-            'policies': policies_html,
-            'guidelines': guidelines_html,
-            'essays': essays_html
-        })
-        
-    except Exception as e:
-        print(f"\n✗ Error in analyze endpoint: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': f'Server error: {str(e)}'}), 500
-
+# Create the Flask application
+app = create_app()
 
 if __name__ == '__main__':
-    # Run the Flask development server
-    import os
+    # Get port from environment variable (for deployment) or use default
     port = int(os.environ.get('PORT', 5001))
     
     print("\n" + "="*60)
@@ -118,6 +25,6 @@ if __name__ == '__main__':
     print("Press Ctrl+C to stop the server")
     print("="*60 + "\n")
     
-    # Use 0.0.0.0 for deployment, but keep debug=False for production
+    # Run the Flask development server
+    # Use 0.0.0.0 for deployment compatibility
     app.run(debug=False, port=port, host='0.0.0.0')
-

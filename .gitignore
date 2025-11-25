@@ -34,3 +34,7 @@ Thumbs.db
 # Archives and temporary files
 Archive.zip
 *.zip
+
+# Test files
+test_*.py
+*_test.py

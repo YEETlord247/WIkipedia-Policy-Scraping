@@ -153,6 +153,79 @@
                 analyzeDiscussion();
             }
         });
+
+        // Add click handlers for policy items to scroll and highlight
+        function addPolicyClickHandlers() {
+            const policyItems = document.querySelectorAll('.policy-item');
+            
+            policyItems.forEach(item => {
+                item.style.cursor = 'pointer';
+                
+                item.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on a link
+                    if (e.target.tagName === 'A') {
+                        return;
+                    }
+                    
+                    const highlightId = this.getAttribute('data-highlight');
+                    if (!highlightId) {
+                        console.log('No highlight ID found');
+                        return;
+                    }
+                    
+                    const targetElement = document.getElementById(highlightId);
+                    
+                    if (targetElement) {
+                        console.log('Scrolling to and highlighting:', highlightId);
+                        
+                        // Scroll the discussion panel to the target
+                        const discussionPanel = document.getElementById('discussion-content');
+                        
+                        // Get the target's position relative to the scrollable container
+                        const panelRect = discussionPanel.getBoundingClientRect();
+                        const targetRect = targetElement.getBoundingClientRect();
+                        const targetPosition = targetRect.top - panelRect.top + discussionPanel.scrollTop;
+                        
+                        discussionPanel.scrollTo({
+                            top: targetPosition - 100, // Offset for better visibility
+                            behavior: 'smooth'
+                        });
+                        
+                        // Remove previous highlights
+                        document.querySelectorAll('.highlighted-mention').forEach(el => {
+                            el.classList.remove('highlighted-mention');
+                        });
+                        
+                        // Add highlight to the target
+                        targetElement.classList.add('highlighted-mention');
+                        
+                        // Remove highlight after 3 seconds
+                        setTimeout(() => {
+                            targetElement.classList.remove('highlighted-mention');
+                        }, 3000);
+                    } else {
+                        console.log('Target element not found:', highlightId);
+                    }
+                });
+            });
+        }
+
+        // Call this after results are displayed
+        function displayResults(data) {
+            // Display discussion
+            document.getElementById('discussion-content').innerHTML = data.discussion_html;
+
+            // Display policies
+            document.getElementById('policies-content').innerHTML = formatText(data.policies);
+            document.getElementById('guidelines-content').innerHTML = formatText(data.guidelines);
+            document.getElementById('essays-content').innerHTML = formatText(data.essays);
+
+            // Show results
+            document.getElementById('results').style.display = 'flex';
+            
+            // Add click handlers for interactive scrolling
+            addPolicyClickHandlers();
+        }
     </script>
 </body>
 </html>

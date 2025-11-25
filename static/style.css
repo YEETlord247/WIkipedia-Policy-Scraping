@@ -281,6 +281,103 @@ header p {
     color: #333;
 }
 
+/* Policy mention highlighting */
+.policy-mention {
+    background: rgba(102, 126, 234, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.highlighted-mention {
+    background: rgba(255, 235, 59, 0.6) !important;
+    padding: 4px 8px !important;
+    border-radius: 4px;
+    box-shadow: 0 0 0 3px rgba(255, 235, 59, 0.3);
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Policy item styling */
+.policy-item-wrapper {
+    margin-bottom: 20px;
+    padding: 12px;
+    background: #fafafa;
+    border-radius: 8px;
+    border-left: 3px solid #667eea;
+}
+
+.policy-item {
+    padding: 4px 0;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+.policy-item:hover {
+    color: #667eea;
+}
+
+.policy-link {
+    font-weight: 600;
+    color: #667eea !important;
+    text-decoration: none;
+    font-size: 1.05em;
+}
+
+.policy-link:hover {
+    text-decoration: underline;
+}
+
+.policy-name {
+    color: #666;
+    font-size: 0.9em;
+    font-weight: normal;
+}
+
+.mention-count {
+    color: #999;
+    font-size: 0.85em;
+    font-style: italic;
+}
+
+.context-snippets {
+    margin-top: 8px;
+    padding-left: 8px;
+}
+
+.context-snippet {
+    padding: 8px;
+    margin: 4px 0;
+    background: white;
+    border-left: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #555;
+    line-height: 1.5;
+}
+
+.context-snippet strong {
+    background: rgba(102, 126, 234, 0.15);
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.more-contexts {
+    color: #999;
+    font-size: 0.85em;
+    font-style: italic;
+    margin-top: 4px;
+    padding-left: 8px;
+}
+
 /* Responsive design */
 @media (max-width: 1200px) {
     .results {
